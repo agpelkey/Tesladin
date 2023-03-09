@@ -6,6 +6,6 @@
 
 ## If the user loses the url..... YIKES.
 
-## This project is a challenge. Only the official Go docs found [here] (https://go.dev/#) can be used as reference material to build this project. No Youtube, no Google, no ChatGPT, just me and the docs baby.
+## This project is a challenge. Only the official Go docs found [here](https://go.dev/#) can be used as reference material to build this project. No Youtube, no Google, no ChatGPT, just me and the docs baby.
 
 #### To run the service execute "make run".
