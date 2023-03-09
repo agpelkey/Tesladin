@@ -1,4 +1,4 @@
-# tesladin
+# Tesladin
 
 ## Service that an end user can send files to via curl.
 
