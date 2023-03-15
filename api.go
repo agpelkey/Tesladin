@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 )
@@ -45,6 +44,9 @@ func (s *APIServer) Run() {
 }
 
 func (s *APIServer) handleHome(w http.ResponseWriter, r *http.Request) error {
-	io.WriteString(w, "Welcome to the home page")
+
+	fmt.Println(JSONResponse{Message: "hello world"})
+
 	return nil
+
 }
