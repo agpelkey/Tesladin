@@ -2,6 +2,10 @@ package main
 
 import "database/sql"
 
-type Database struct {
+type PostgresDB struct {
 	db *sql.DB //database connection pool
+}
+
+type JSONResponse struct {
+	Message string `json:"message"`
 }

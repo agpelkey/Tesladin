@@ -1,17 +1,27 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
 
-type JSONResponse struct {
-	Message string `json:"message"`
-}
+	_ "github.com/lib/pq"
+)
 
 func main() {
 
-	db, err := sql.Open("postgres", "fileserver")
+	db, err := sql.Open("postgres", "user=postgres dbname=fileserver password=fileserver sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	server := NewAPIServer(":8080")
+	db.SetConnMaxLifetime(0)
+	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(50)
+
+	s := &PostgresDB{db: db}
+
+	server := NewAPIServer(":8080", s)
 
 	server.Run()
-	
+
 }

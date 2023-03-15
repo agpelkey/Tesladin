@@ -10,12 +10,14 @@ import (
 type APIServer struct {
 	listenAddr string
 	// db interface here
+	db *PostgresDB
 }
 
 // function to create new API Server
-func NewAPIServer(listenAddr string) *APIServer {
+func NewAPIServer(listenAddr string, db *PostgresDB) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		db:         db,
 	}
 }
 
