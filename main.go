@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -9,18 +8,16 @@ import (
 
 func main() {
 
-	db, err := sql.Open("postgres", "user=postgres dbname=fileserver password=fileserver sslmode=disable")
+	dbconn, err := NewPostgresDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db.SetConnMaxLifetime(0)
-	db.SetMaxIdleConns(50)
-	db.SetMaxOpenConns(50)
+	if err := dbconn.Init(); err != nil {
+		log.Fatal(err)
+	}
 
-	s := &PostgresDB{db: db}
-
-	server := NewAPIServer(":8080", s)
+	server := NewAPIServer(":8080", dbconn)
 
 	server.Run()
 

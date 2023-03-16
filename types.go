@@ -9,3 +9,7 @@ type PostgresDB struct {
 type JSONResponse struct {
 	Message string `json:"message"`
 }
+
+type File struct {
+	id int `json:"id"`
+}
