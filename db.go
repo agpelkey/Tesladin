@@ -2,67 +2,30 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"log"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type PostgresRepo interface {
-	NewFile(name string) (int64, error)
-}
-
-const dbtimeout = time.Second * 3
-
-func (m *PostgresDB) Connection() *sql.DB {
-	return m.db
-}
-
-func NewPostgresDB() (*PostgresDB, error) {
-	db, err := sql.Open("postgres", "user=postgres dbname=postgres password=fileserver sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	}
-
-	return &PostgresDB{
-		db: db,
-	}, nil
-
-}
-
-func (m *PostgresDB) CreateTable() error {
-	stmt := `CREATE TABLE IF NOT EXISTS files (
-		id SERIAL PRIMARY KEY
-	);`
-
-	_, err := m.db.Exec(stmt)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
-}
-
-func (m *PostgresDB) Init() error {
-	return m.CreateTable()
-}
-
-func (m *PostgresDB) NewFile(name string) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbtimeout)
+func Init() (*MongoInstace, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	stmt, err := m.db.ExecContext(ctx, "INSERT INTO files VALUES (name = ?)", name)
-	if err != nil {
-		log.Fatal(err)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database("FileStorage").Collection("files")
+
+	mg := MongoInstace{
+		Client: client,
+		Db:     db.Database(),
 	}
 
-	result, err := stmt.LastInsertId()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return &mg, nil
 
-	return result, nil
 }

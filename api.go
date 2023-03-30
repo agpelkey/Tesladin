@@ -2,22 +2,27 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/gridfs"
 )
 
 // struct to hold server info
 type APIServer struct {
 	listenAddr string
 	// db interface here
-	db *PostgresDB
+	db *mongo.Database
 }
 
 // function to create new API Server
-func NewAPIServer(listenAddr string, db *PostgresDB) *APIServer {
+func NewAPIServer(listenAddr string, db *MongoInstace) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		db:         db,
+		db:         db.Db,
 	}
 }
 
@@ -56,5 +61,43 @@ func (s *APIServer) handleHome(w http.ResponseWriter, r *http.Request) error {
 func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// logic for sending file post request.
+
 	}
+}
+
+func (mg *MongoInstace) FileUpload(file, filename string) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	conn, err := Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bucket, err := gridfs.NewBucket(
+		conn.Client.Database("files"),
+	)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	payload, err := bucket.OpenUploadStream(
+		filename,
+	)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer payload.Close()
+
+	fileSize, err := payload.Write(data)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	log.Printf("Write file to DB was successfull. File size: %d M\n", fileSize)
 }
