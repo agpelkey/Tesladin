@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -61,11 +62,18 @@ func (s *APIServer) handleHome(w http.ResponseWriter, r *http.Request) error {
 func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// logic for sending file post request.
+		var file string
+
+		if err := json.NewDecoder(r.Body).Decode(&file); err != nil {
+			log.Fatal(err)
+		}
+
+		s.FileUpload(file, "")
 
 	}
 }
 
-func (mg *MongoInstace) FileUpload(file, filename string) {
+func (s *APIServer) FileUpload(file, filename string) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
