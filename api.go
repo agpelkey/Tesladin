@@ -1,15 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/gridfs"
+	_ "go.mongodb.org/mongo-driver/mongo"
+	_ "go.mongodb.org/mongo-driver/mongo/options"
+	_ "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 // struct to hold server info
@@ -43,7 +44,7 @@ func (s *APIServer) Run() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/", makeHTTPHandler(s.handleHome))
+	mux.Handle("/", makeHTTPHandler(s.handleFile))
 
 	log.Println("starting server on port: ", s.listenAddr)
 
@@ -59,22 +60,27 @@ func (s *APIServer) handleHome(w http.ResponseWriter, r *http.Request) error {
 
 }
 
-func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) {
+func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "POST" {
 		// logic for sending file post request.
-		var file string
+		filePayload := File{}
+		payload := json.NewDecoder(r.Body).Decode(&filePayload)
 
-		if err := json.NewDecoder(r.Body).Decode(&file); err != nil {
+		coll := s.db.Client().Database("FileServer").Collection("files")
+
+		result, err := coll.InsertOne(context.TODO(), payload)
+		if err != nil {
 			log.Fatal(err)
 		}
 
-		s.FileUpload(file, "")
-
+		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
 	}
+	return nil
 }
 
+/*
 func (s *APIServer) FileUpload(file, filename string) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -109,3 +115,4 @@ func (s *APIServer) FileUpload(file, filename string) {
 
 	log.Printf("Write file to DB was successfull. File size: %d M\n", fileSize)
 }
+*/

@@ -18,3 +18,7 @@ type MongoInstace struct {
 	Client *mongo.Client
 	Db     *mongo.Database
 }
+
+type File struct {
+	ID int `json:"id,omitempty" bson:"_id,omitempty"`
+}
