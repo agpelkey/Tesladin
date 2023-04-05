@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -20,5 +21,5 @@ type MongoInstace struct {
 }
 
 type File struct {
-	ID int `json:"id,omitempty" bson:"_id,omitempty"`
+	ID primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 }

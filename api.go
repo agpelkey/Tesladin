@@ -21,10 +21,10 @@ type APIServer struct {
 }
 
 // function to create new API Server
-func NewAPIServer(listenAddr string, db *MongoInstace) *APIServer {
+func NewAPIServer(listenAddr string, mg *MongoInstace) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
-		db:         db.Db,
+		db:         mg.Db,
 	}
 }
 
@@ -78,41 +78,20 @@ func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-/*
-func (s *APIServer) FileUpload(file, filename string) {
-	data, err := os.ReadFile(file)
-	if err != nil {
-		log.Fatal(err)
+func (s *APIServer) RetrieveFile(w http.ResponseWriter, r *http.Request) (*File, error) {
+	if r.Method == "GET" {
+		id := r.URL.Query()
+
+		file := File{}
+
+		coll := s.db.Client().Database("FileServer")
+
+		if err := coll.Collection("FileServer").FindOne(context.TODO(), id).Decode(&file); err != nil {
+			log.Fatal(err)
+		}
+
+		return &file, nil
 	}
 
-	conn, err := Init()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bucket, err := gridfs.NewBucket(
-		conn.Client.Database("files"),
-	)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	payload, err := bucket.OpenUploadStream(
-		filename,
-	)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer payload.Close()
-
-	fileSize, err := payload.Write(data)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	log.Printf("Write file to DB was successfull. File size: %d M\n", fileSize)
+	return nil, fmt.Errorf("Method %s not allowed", r.Method)
 }
-*/
