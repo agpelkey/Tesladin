@@ -45,18 +45,11 @@ func (s *APIServer) Run() {
 	mux := http.NewServeMux()
 
 	mux.Handle("/", makeHTTPHandler(s.handleFile))
+	mux.Handle("/tesladin/{id}", makeHTTPHandler(s.handleRetrieveFile))
 
 	log.Println("starting server on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, mux)
-
-}
-
-func (s *APIServer) handleHome(w http.ResponseWriter, r *http.Request) error {
-
-	fmt.Println(JSONResponse{Message: "hello world"})
-
-	return nil
 
 }
 
@@ -74,11 +67,16 @@ func (s *APIServer) handleFile(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+
+		response := fmt.Sprintf("http://localhost:8080/tesladin/%s", result.InsertedID)
+
+		return WriteJSON(w, http.StatusOK, response)
+
 	}
 	return nil
 }
 
-func (s *APIServer) RetrieveFile(w http.ResponseWriter, r *http.Request) (*File, error) {
+func (s *APIServer) handleRetrieveFile(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
 		id := r.URL.Query()
 
@@ -90,8 +88,16 @@ func (s *APIServer) RetrieveFile(w http.ResponseWriter, r *http.Request) (*File,
 			log.Fatal(err)
 		}
 
-		return &file, nil
+		return WriteJSON(w, http.StatusOK, file)
+
 	}
 
-	return nil, fmt.Errorf("Method %s not allowed", r.Method)
+	return fmt.Errorf("Error: method %s not allowed", r.Method)
+
+}
+
+func WriteJSON(w http.ResponseWriter, status int, v any) error {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(v)
 }
