@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,9 +14,9 @@ func Init() (*MongoInstace, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	//dbPasswd := os.Getenv("$MONGO_PASSWD")
+	dbPasswd := os.Getenv("$MONGO_PASSWD")
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://apelkey:CombustionSorc2@cluster0.zpbcywr.mongodb.net/?retryWrites=true&w=majority"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb+srv://apelkey:"+dbPasswd+"@cluster0.zpbcywr.mongodb.net/?retryWrites=true&w=majority"))
 	if err != nil {
 		log.Fatal(err)
 	}
